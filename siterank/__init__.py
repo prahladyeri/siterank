@@ -1,0 +1,5 @@
+__version__ = "0.2"
+__title__ = "get alexa global rank for a given website or domain"
+__author__ = "Prahlad Yeri<prahladyeri@yahoo.com>"
+__license__ = "MIT"
+__copyright__ = "(c) 2019 Prahlad Yeri"
