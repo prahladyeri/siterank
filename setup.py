@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-import siterank
+from siterank import __version__, __description__, __author__, __email__, __license__
 from setuptools import setup, find_packages
 
 def read(fname):
@@ -8,9 +8,9 @@ def read(fname):
 
 s = setup(
 	name='siterank',
-	version=siterank.__version__,
-	license='MIT',
-	description=siterank.__title__,
+	version=__version__,
+	license=__license__,
+	description=__description__,
 	long_description=read("README.md"),
 	long_description_content_type='text/markdown',
 	keywords="internet",
@@ -23,6 +23,11 @@ s = setup(
 		],
 	},
 	install_requires=['requests'],
-	author='Prahlad Yeri',
-	author_email='prahladyeri@yahoo.com',
+	author=__author__,
+	author_email=__email__,
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
 	)
