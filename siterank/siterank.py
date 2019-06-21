@@ -7,15 +7,26 @@
 #
 import urllib.request
 import sys, os
+import argparse
 import xml.etree.ElementTree as ET
+from siterank import __title__, __version__
 
 def main():
-	if len(sys.argv) == 1:
-		print("Insufficient parameters.")
-		exit()
-	urls = sys.argv[1:]
+	# if len(sys.argv) == 1:
+		# print("Insufficient parameters.")
+		# exit()
+	# urls = sys.argv[1:]
+	if '-v' in sys.argv or '--version' in sys.argv:
+		print( "%s version %s" % (__title__, __version__) )
+		return
+	parser = argparse.ArgumentParser()
+	parser.add_argument('list', nargs='+', default=[], help='List of URLs EX: www.google.com www.yahoo.com etc.')
+	parser.add_argument('-v', '--version', help='Display Version', action='store_true')
+	args = parser.parse_args()
+	
+	
 	ranks = {}
-	for url in urls:
+	for url in args.list:
 		#https://stackoverflow.com/questions/3676376/fetching-alexa-data
 		turl = "http://data.alexa.com/data?cli=10&url=" + url
 		req = urllib.request.Request(turl)
