@@ -40,12 +40,22 @@ def main():
 				ranks[url] = rnk
 			else:
 				print("Not found: " + url)
-	sranks = [(k,ranks[k]) for k in sorted(ranks, key=ranks.get, reverse=False)]
+	sranks = [(k,ranks[k] if ranks[k]<1000 else str(int(ranks[k]/1000)) + "k") for k in sorted(ranks, key=ranks.get, reverse=False)]
+	
+	col_len = 40
+	cols = 2
+	#row_format ="{:>10}" * (len(sranks.keys()) + 1)
+	row_format = ("{:<%d}" % col_len) * cols
+	print("")
+	print("*" * col_len * cols)
+	print(" ", row_format.format("Website", "Rank"))
+	print("*" * col_len * cols)
 	for k,v in sranks:
-		rank = v
-		if rank > 1000:
-			rank = str(int(rank/1000)) + "K"
-		print(k, rank)
+		# rank = v
+		# if rank > 1000:
+			# rank = str(int(rank/1000)) + "K"
+		#print(k, v)
+		print(" ", row_format.format(k, v))
 
 if __name__ == "__main__":
 	main()
