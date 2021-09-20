@@ -5,6 +5,7 @@
 #
 # @author Prahlad Yeri
 #
+import time
 import urllib.request
 import sys, os
 import argparse
@@ -27,7 +28,9 @@ def split_dict(data, size=10):
 
 def get_ranks(url_list):
     ranks = {}
-    for url in url_list:
+    #for url in url_list:
+    for i in range(len(url_list)):
+        url = url_list[i]
         turl = "http://data.alexa.com/data?cli=10&url=" + url
         req = urllib.request.Request(turl)
         with urllib.request.urlopen(req) as fp:
@@ -41,6 +44,9 @@ def get_ranks(url_list):
             else:
                 #not_found.append(url)
                 ranks[url] = -1
+        if i%30 == 0:
+            #print(i, 'wait')
+            time.sleep(3)
     return ranks
     
 def main():
