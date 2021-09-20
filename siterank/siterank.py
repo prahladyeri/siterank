@@ -11,6 +11,20 @@ import argparse
 import xml.etree.ElementTree as ET
 from siterank import __title__, __version__
 
+def split_dict(data, size=10):
+    #s = {}
+    s = []
+    keys = list(data.keys())
+    for i in range(0, len(keys), size):
+        #s[i] = {}
+        dct = {}
+        for j in range(i, i+size):
+            if j >= len(keys): break
+            key = keys[j]
+            dct[key] = data[key]
+        s.append(dct)
+    return s
+
 def get_ranks(url_list):
     ranks = {}
     for url in url_list:
