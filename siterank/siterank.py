@@ -29,7 +29,8 @@ def split_dict(data, size=10):
 def get_ranks(url_list):
     ranks = {}
     #for url in url_list:
-    for i in range(len(url_list)):
+    cnt = len(url_list)
+    for i in range(cnt):
         url = url_list[i]
         turl = "http://data.alexa.com/data?cli=10&url=" + url
         req = urllib.request.Request(turl)
@@ -44,9 +45,12 @@ def get_ranks(url_list):
             else:
                 #not_found.append(url)
                 ranks[url] = -1
+        ss = "%d/%d. %s" % (i+1,cnt, url.ljust(100))
+        print(ss, end='\r', flush=True)
         if i%30 == 0:
             #print(i, 'wait')
             time.sleep(3)
+    print("")
     return ranks
     
 def main():
