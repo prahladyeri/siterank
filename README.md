@@ -9,15 +9,9 @@
 # siterank
 A python script to get alexa global rank for a given website or domain.
 
-```bash
-Note:
+**Note:**
 
-As of February 2023, Amazon's Alexa API has been retired.
-Consequently, I've switched to [SimilarWeb API](https://www.similarweb.com/corp/ranking-api/)'s free-tier for
-fetching these rankings. When you run the program for the first time,
-it'll prompt you to create a SimilarWeb account and store the 
-API key to the settings JSON file.
-```
+As of February 2023, Amazon's Alexa API has been retired. Consequently, I've switched to [SimilarWeb API](https://www.similarweb.com/corp/ranking-api/)'s free-tier for fetching these rankings. When you run the  program for the first time, it'll prompt you to create a SimilarWeb account and store the API key to the settings JSON file.
 
 # Installation
 
