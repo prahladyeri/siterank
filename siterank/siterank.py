@@ -5,45 +5,40 @@
 #
 # @author Prahlad Yeri
 #
-import time, pickle, sysconfig
+import time, sysconfig
 import urllib.request
 import sys, os
 import argparse
-import xml.etree.ElementTree as ET
+import sqlite3, json
 from siterank import __title__, __version__
 
+
 #@todo: move this to a common util library
-def get_install_path():
-    tpath = sysconfig.get_path('purelib') + os.sep + "siterank"
+def get_config_path():
+    #tpath = sysconfig.get_path('purelib') + os.sep + "siterank"
+    tpath = os.path.expanduser("~/.config/")
     if not os.path.exists(tpath):
         os.makedirs(tpath)
     return tpath
 
-# check/load local cache
-cache = {}
-pkl_path = get_install_path() + os.sep + "siterank.pkl"
-if os.path.exists(pkl_path):
-    cache = pickle.load(open(pkl_path, 'rb'))
-    print("successfully imported cache. %d records found.." % len(cache.keys()))
-else:
-    cache = {}
-    pickle.dump(cache, open(pkl_path, 'wb'), -1) 
-    print("cache doesn't exist, created cache..")
+def load_settings():
+    global settings
+    if os.path.exists(settings_path):
+        settings = json.loads(open(settings_path, 'r').read())
+    else:
+        open(settings_path, 'w').write( json.dumps(settings) )
+        
+settings = {'api_key': ''} # default settings
+db_path = os.path.join(get_config_path(), "siterank.db")
+settings_path = os.path.join(get_config_path() , "siterank-settings.json")
+sql = "select 1"
+if not os.path.exists(db_path):
+    sql = "create table sites(id integer primary key, domain varchar(255), rank int, unique(domain))"
 
-
-def split_dict(data, size=10):
-    #s = {}
-    s = []
-    keys = list(data.keys())
-    for i in range(0, len(keys), size):
-        #s[i] = {}
-        dct = {}
-        for j in range(i, i+size):
-            if j >= len(keys): break
-            key = keys[j]
-            dct[key] = data[key]
-        s.append(dct)
-    return s
+conn = sqlite3.connect(db_path)
+conn.row_factory = sqlite3.Row
+conn.execute(sql)
+print("successfully imported cache db..")
 
 def get_ranks(url_list, refresh=False):
     ranks = {}
@@ -53,26 +48,27 @@ def get_ranks(url_list, refresh=False):
         url = url_list[i]
         if not refresh:
             # check local cache, if found, no need of requesting
-            if url in cache: # found
+            rows=conn.execute("select * from sites where domain=?", [url]).fetchall()
+            if len(rows)>0: # found
                 print("found in cache:", url)
-                ranks[url] = cache[url]
+                ranks[url] = rows[0]['rank']
         if url not in ranks:
             print("fetching live:", url)
-            turl = "http://data.alexa.com/data?cli=10&url=" + url
+            turl = "https://api.similarweb.com/v1/similar-rank/%s/rank?api_key=%s" % (url, settings['api_key'])
             req = urllib.request.Request(turl)
-            with urllib.request.urlopen(req) as fp:
+            try:
+                fp= urllib.request.urlopen(req)
                 output = fp.read().decode('utf-8')
-                tree = ET.ElementTree(ET.fromstring(output))
-                root = tree.getroot()
-                sd = root.find("SD")
-                if sd != None:
-                    rnk = int(sd.find("POPULARITY").get("TEXT"))
+                obj = json.loads(output)
+                #print('obj:', obj)
+                if obj['meta']['status'] != 'Error':
+                    rnk = int(obj['similar_rank']['rank'])
                     ranks[url] = rnk
-                else:
-                    #not_found.append(url)
-                    ranks[url] = -1
-                cache[url] = ranks[url] # also save to cache
-                pickle.dump(cache, open(pkl_path,'wb'), -1)
+                    conn.execute("delete from sites where domain=?", [url])
+                    conn.execute("insert into sites(domain,rank) values(?,?)", [url, rnk])
+                    conn.commit()
+            except urllib.error.HTTPError as e:
+                print("NOT FOUND:", url)
         ss = "%d/%d. %s" % (i+1,cnt, url.ljust(100))
         print(ss, end='\r', flush=True)
         if i>0 and i%30 == 0:
@@ -85,8 +81,14 @@ def main():
     if '-v' in sys.argv or '--version' in sys.argv:
         print( "%s version %s" % (__title__, __version__) )
         return
+    load_settings()
+    if settings['api_key'] == '':
+        print("The API Key is empty!")
+        print("[1] Please visit https://www.similarweb.com/corp/ranking-api/ and create a free account and generate an API Key.")
+        print("[2] Once done, copy that API Key and put it in the below JSON file:\n\n" + settings_path)
+        return
     parser = argparse.ArgumentParser()
-    parser.add_argument('list', nargs='+', default=[], help='List of URLs EX: www.google.com www.yahoo.com etc.')
+    parser.add_argument('list', nargs='+', default=[], help='List of domains EX: www.google.com www.yahoo.com etc.')
     parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
     parser.add_argument('-v', '--version', help='Display Version', action='store_true')
     args = parser.parse_args()
