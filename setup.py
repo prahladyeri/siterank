@@ -24,7 +24,7 @@ s = setup(
 			"siterank = siterank.siterank:main",
 		],
 	},
-	install_requires=[],
+	install_requires=['certifi',],
 	author=__author__,
 	author_email=__email__,
     classifiers=[

@@ -7,10 +7,13 @@
 #
 import time, sysconfig
 import urllib.request
+import ssl, certifi
 import sys, os
 import argparse
 import sqlite3, json
 from siterank import __title__, __version__
+
+ctx = ssl.create_default_context(cafile=certifi.where())
 
 
 #@todo: move this to a common util library
@@ -55,9 +58,10 @@ def get_ranks(url_list, refresh=False):
         if url not in ranks:
             print("fetching live:", url)
             turl = "https://api.similarweb.com/v1/similar-rank/%s/rank?api_key=%s" % (url, settings['api_key'])
+            #print("fetching live:", turl)
             req = urllib.request.Request(turl)
             try:
-                fp= urllib.request.urlopen(req)
+                fp= urllib.request.urlopen(req, context=ctx)
                 output = fp.read().decode('utf-8')
                 obj = json.loads(output)
                 #print('obj:', obj)
